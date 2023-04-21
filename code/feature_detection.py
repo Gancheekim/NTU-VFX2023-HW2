@@ -42,9 +42,9 @@ def harris_corner_detection(img, gauss_filt_size=3, k=0.04, threshold_ratio=0.01
 	# 6. Threshold on value of R; compute nonmax suppression.
 	threshold = np.max(R) * threshold_ratio
 	R[R < threshold] = 0
-	feature_pts = peak_local_max(R, min_distance=10) # dim: (N,2), each representing [y, x]
-	
-	return feature_pts
+	feature_pts = peak_local_max(R, min_distance=10) 
+	# dim: (N,2), each representing [y, x]
+	return feature_pts 
 
 
 if __name__ == "__main__":
