@@ -1,14 +1,15 @@
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
-from feature_detection import harris_corner_detection
-from math import tan, pi
 
 class SIFT_descriptor():
 	def __init__(self):
-		pass
+		self.bfMatcher = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
 
 	def rotate_image(self, image, angle, center=None):
+		'''
+		rotate image according to its center point
+		'''
 		h, w = image.shape
 		if center==None:
 			center = (w/2, h/2)
@@ -18,9 +19,7 @@ class SIFT_descriptor():
 	
 	def normalize(self, v):
 		norm = np.linalg.norm(v, ord=2)
-		if norm == 0: 
-			return v
-		return v / norm
+		return v/norm if (norm > 0) else v
 
 	def orientation_assignment(self, img_patch, total_bins=36):
 		'''
@@ -54,6 +53,7 @@ class SIFT_descriptor():
 		orientations.append(main_orientation)
 
 		'''
+		# this is for finding secondary orientation which has magnitude over 0.8 * main_orientation
 		mag_order = np.unique(hist)
 		if mag_order[-2] >= 0.8*mag_order[-1]:
 			secondary_orientation_bin = np.where(hist == mag_order[-2]) # get the 2nd largest bin index
@@ -62,91 +62,89 @@ class SIFT_descriptor():
 		'''
 		return orientations, hist
 	
-	def run(self, img, keypoints):
+	def cal_descriptor(self, img, keypoints):
+		'''
+		---- input ----
+		img: (H-by-W) array
+		keypoints: (N-by-2) array, the 2 are to specify the corresponding y and x coordinate of a keypoint
+		---- output ----
+		a (N-by-128) array
+		'''
 		if len(img.shape) == 3:
 			img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 		keypoints_desc = []
 		for y, x in keypoints:
+			# for each keypoints, obtain its (16x16) nearby patch/window
 			img_patch = img[y-8:y+8, x-8:x+8]
+			# calculate the main orientation of the patch
 			orientations, _ = self.orientation_assignment(img_patch)
-
-			# rotate according to orientation
+			# rotate the patch according to orientation
 			img_patch = self.rotate_image(img_patch, orientations[0])
-			# for each of the (4x4) size of smaller patch, calculate the 8-bin orientation histogram
+
+			# for each of the (4x4) size sub-patch, calculate the 8-bin orientation histogram.
+			# Thus, we will have 16 sub-patch and 8 orientation for each, total = 128 dimensions.
 			desc_128 = []
 			for i in range(0, 13, 4):
 				for j in range(0, 13, 4):
 					img_4x4 = img_patch[i:i+4, j:j+4]
 					_, hist = self.orientation_assignment(img_4x4, total_bins=8)
 					desc_128 += hist.tolist()
-			# normalize
+			# normalize the 128 dimension descriptor
 			desc_128_arr = np.array(desc_128)
 			desc_128_arr = self.normalize(desc_128_arr)
 			# clip to 0.2, then normalize again
 			if np.any(desc_128_arr > 0.2):
 				desc_128_arr[desc_128_arr>0.2] = 0.2
 				desc_128_arr = self.normalize(desc_128_arr)
-			desc_128 = desc_128_arr.tolist()
-			# keypoints_desc.append({'point':(y,x), 'desc':desc_128})
-			keypoints_desc.append(desc_128)
+			keypoints_desc.append(desc_128_arr)
 
-		return keypoints_desc
+		return np.array(keypoints_desc).astype(np.float32) # (N-by-128) array, where N = number of keypoints
+	
+	def find_matches(self, des1, des2):
+		'''
+		brute force matcher, using L2-distance as metric
+		'''
+		return self.bfMatcher.match(des1, des2)
+	
+	def draw_matches(self, img1, keypoints1, img2, keypoints2, matches):
+		'''
+		plot the matched points of the 2 imgs
+		'''
+		cv_kp1 = []
+		for k in keypoints1:
+			y = float(k[0])
+			x = float(k[1])
+			cv_kp1.append(cv2.KeyPoint(x, y, size=1, angle=0, response=1, octave=1, class_id=0)) # (x, y, size, angle, response, octave, class_id)
+
+		cv_kp2 = []
+		for k in keypoints2:
+			y = float(k[0])
+			x = float(k[1])
+			cv_kp2.append(cv2.KeyPoint(x, y, size=1, angle=0, response=1, octave=1, class_id=0)) # (x, y, size, angle, response, octave, class_id)
+
+		img3 = cv2.drawMatches(img1, cv_kp1, img2, cv_kp2, matches, None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+		cv2.imshow("Matches", img3)
+		cv2.waitKey(0)
 
 
 
 if __name__ == "__main__":
-	'''
-	test_img_name = "./../data/grail/grail01.jpg"
-	img = cv2.imread(test_img_name)
-	keypoints = harris_corner_detection(img)
+	from feature_detection import harris_corner_detection
 
-	img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-	
-	descriptor = SIFT_descriptor()
-	keypoints_desc = descriptor.run(img, keypoints)
-	'''
-
-	test_img_name = "./../data/parrington/prtn01.jpg"
-	img1 = cv2.imread(test_img_name)
-
-	test_img_name = "./../data/parrington/prtn02.jpg"
-	img2 = cv2.imread(test_img_name)
+	# test_img_name1 = "./../data/parrington/prtn01.jpg"
+	# test_img_name2 = "./../data/parrington/prtn02.jpg"
+	test_img_name1 = "./../data/denny/denny00.jpg"
+	test_img_name2 = "./../data/denny/denny01.jpg"
+	img1 = cv2.imread(test_img_name1)
+	img2 = cv2.imread(test_img_name2)
 
 	keypoints1 = harris_corner_detection(img1) # numpy array of size N-by-2, specifying the corresponding y and x coordinate of a keypoint
 	keypoints2 = harris_corner_detection(img2) # numpy array of size N-by-2, specifying the corresponding y and x coordinate of a keypoint
 
-	# print(type(keypoints1))
-
-	# Detect keypoints in both images using the SIFT detector
 	sift = SIFT_descriptor()
-	des1 = sift.run(img1, keypoints1)
-	des2 = sift.run(img2, keypoints2)
-	des1 = np.array(des1).astype(np.float32)
-	des2 = np.array(des2).astype(np.float32)
-
-	# Convert the SIFT keypoints to cv2.KeyPoint objects
-	cv_kp1 = []
-	for k in keypoints1:
-		# (x, y, size, angle, response, octave, class_id)
-		cv_kp1.append(cv2.KeyPoint(k[0], k[1], _size=k[2], _angle=k[3], _response=k[4], _octave=k[5], _class_id=k[6]))
-
-	cv_kp2 = []
-	for k in keypoints2:
-		# (x, y, size, angle, response, octave, class_id)
-		cv_kp2.append(cv2.KeyPoint(k[0], k[1], _size=k[2], _angle=k[3], _response=k[4], _octave=k[5], _class_id=k[6]))
-
-	# print(des1.dtype)
-	# print(des2.dtype)
-
-	# Create a brute-force matcher object
-	bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
-
-	# # Match the keypoints in both images
-	matches = bf.match(des1, des2)
-	# print(matches)
-
-	# Visualize the matches
-	img3 = cv2.drawMatches(img1, cv_kp1, img2, cv_kp2, matches[:50], None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
-	cv2.imshow("Matches", img3)
-	cv2.waitKey(0)
+	des1 = sift.cal_descriptor(img1, keypoints1)
+	des2 = sift.cal_descriptor(img2, keypoints2)
+	
+	matches = sift.find_matches(des1, des2)
+	sift.draw_matches(img1, keypoints1, img2, keypoints2, matches)
