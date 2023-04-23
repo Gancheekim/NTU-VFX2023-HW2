@@ -132,10 +132,10 @@ class SIFT_descriptor():
 if __name__ == "__main__":
 	from feature_detection import harris_corner_detection
 
-	# test_img_name1 = "./../data/parrington/prtn01.jpg"
-	# test_img_name2 = "./../data/parrington/prtn02.jpg"
-	test_img_name1 = "./../data/denny/denny00.jpg"
-	test_img_name2 = "./../data/denny/denny01.jpg"
+	test_img_name1 = "./../data/parrington/prtn13.jpg"
+	test_img_name2 = "./../data/parrington/prtn12.jpg"
+	# test_img_name1 = "./../data/denny/denny00.jpg"
+	# test_img_name2 = "./../data/denny/denny01.jpg"
 	img1 = cv2.imread(test_img_name1)
 	img2 = cv2.imread(test_img_name2)
 
