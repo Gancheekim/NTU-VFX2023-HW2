@@ -24,6 +24,7 @@ def cylindrical_proj(img, f):
 
 	# foward warpping
 	warp_img[y_mat, x_mat, :] = img[y_ori_mat, x_ori_mat, :]
+
 	return warp_img
 	
 

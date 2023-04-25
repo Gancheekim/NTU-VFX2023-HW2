@@ -48,7 +48,8 @@ def harris_corner_detection(img, gauss_filt_size=3, k=0.04, threshold_ratio=0.01
 
 
 if __name__ == "__main__":
-	test_img_name = "./../data/test/chessboard.jpg"
+	# test_img_name = "./../data/test/chessboard.jpg"
+	test_img_name = "./../data/parrington/prtn13.jpg"
 	img = cv2.imread(test_img_name)
 
 	feature_pts = harris_corner_detection(img)
