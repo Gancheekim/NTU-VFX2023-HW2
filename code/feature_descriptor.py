@@ -106,7 +106,9 @@ class SIFT_descriptor():
 		brute force matcher, using L2-distance as metric
 		'''
 		return self.bfMatcher.match(des1, des2)
-	
+			
+		
+
 	def draw_matches(self, img1, keypoints1, img2, keypoints2, matches):
 		'''
 		plot the matched points of the 2 imgs
@@ -124,39 +126,10 @@ class SIFT_descriptor():
 			cv_kp2.append(cv2.KeyPoint(x, y, size=1, angle=0, response=1, octave=1, class_id=0)) # (x, y, size, angle, response, octave, class_id)
 
 		img3 = cv2.drawMatches(img1, cv_kp1, img2, cv_kp2, matches, None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
-		cv2.imshow("Matches", img3)
-		cv2.waitKey(0)
-	
-
-	def get_cv_keypoints(self, img1, keypoints1, img2, keypoints2, matches):
-		'''
-		plot the matched points of the 2 imgs
-		'''
-		cv_kp1 = []
-		for k in keypoints1:
-			y = float(k[0])
-			x = float(k[1])
-			cv_kp1.append(cv2.KeyPoint(x, y, size=1, angle=0, response=1, octave=1, class_id=0)) # (x, y, size, angle, response, octave, class_id)
-
-		cv_kp2 = []
-		for k in keypoints2:
-			y = float(k[0])
-			x = float(k[1])
-			cv_kp2.append(cv2.KeyPoint(x, y, size=1, angle=0, response=1, octave=1, class_id=0)) # (x, y, size, angle, response, octave, class_id)
-
-		
-		#--------------------
-		# David edit
-		#--------------------
-		'''
-		return the matched points of the 2 imgs
-		'''
-		# img3 = cv2.drawMatches(img1, cv_kp1, img2, cv_kp2, matches, None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
 		# cv2.imshow("Matches", img3)
 		# cv2.waitKey(0)
-		return cv_kp1, cv_kp2
-		
-
+		cv2.imwrite("./../data/output/matched.jpg", img3)
+	
 
 if __name__ == "__main__":
 	from feature_detection import harris_corner_detection
