@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 class SIFT_descriptor():
 	def __init__(self):
-		self.bfMatcher = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
+		self.bfMatcher = cv2.BFMatcher(cv2.NORM_L2, crossCheck=False)
 
 	def rotate_image(self, image, angle, center=None):
 		'''
@@ -105,7 +105,8 @@ class SIFT_descriptor():
 		'''
 		brute force matcher, using L2-distance as metric
 		'''
-		return self.bfMatcher.match(des1, des2)
+		# return self.bfMatcher.match(des1, des2)
+		return self.bfMatcher.knnMatch(des1, des2, k=2)   # use knn to get best k matches, and apply ratio test according to D.Lowe paper (Ref: https://docs.opencv.org/4.x/dc/dc3/tutorial_py_matcher.html)
 			
 		
 
@@ -149,4 +150,5 @@ if __name__ == "__main__":
 	des2 = sift.cal_descriptor(img2, keypoints2)
 	
 	matches = sift.find_matches(des1, des2)
+	print(type(matches[0]))
 	sift.draw_matches(img1, keypoints1, img2, keypoints2, matches)
