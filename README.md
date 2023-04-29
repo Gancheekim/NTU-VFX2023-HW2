@@ -33,6 +33,7 @@ Note:
     - grail
     - denny
     - csie
+- the generated panorama is located at ```data/output/panorama.jpg```
 
 ## Results:
 
