@@ -20,10 +20,6 @@ def read_data(path):
 		filename_list.sort(reverse=True)
 
 	for file in filename_list:
-		if file.endswith(".jpg"):
-			img = cv2.imread(path + file)
-			img_list.append(img)
-
 		if file.endswith(".txt"):
 			with open(path + file) as f:
 				lines = [line.rstrip() for line in f]
@@ -32,7 +28,11 @@ def read_data(path):
 				focal_len = float(lines[line_idx + 11])
 				focal_len_list.append(focal_len)
 				line_idx += 13
-
+		# if file.endswith(".jpg"):
+		else:
+			img = cv2.imread(path + file)
+			img_list.append(img)
+			
 	return img_list, focal_len_list
 
 
