@@ -36,15 +36,15 @@ Note:
 ## Results:
 
 ### parrington:
-<img src="data/output/panorama_parrington.jpg" height="180">
+<img src="data/output/panorama_parrington.jpg" height="160">
 
 
 ### grail:
-<img src="data/output/panorama_grail.jpg" height="180">
+<img src="data/output/panorama_grail.jpg" height="160">
 
 
 ### denny: (w/o tripod)
-<img src="data/output/panorama_denny.jpg" height="180">
+<img src="data/output/panorama_denny.jpg" height="160">
 
 
 ### csie: (w/o tripod)
