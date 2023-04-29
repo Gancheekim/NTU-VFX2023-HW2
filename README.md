@@ -18,7 +18,8 @@ website: https://www.csie.ntu.edu.tw/~cyy/courses/vfx/21spring/assignments/proj2
 
 ## Dependencies:
 please install them using ```pip install -r requirements.txt```. packages used in our code:
-- numpy, opencv-python, matplotlib, scikit-image
+- numpy, opencv-python, matplotlib, scikit-image  
+> It is worth to mention that some of our dependencies couldn't be installed on the latest version of Python, so consider executing our code on Python3.7.9 or Python3.8.10, which in our use case works fine.
 
 ## Execution:
 Generating Panorama:
