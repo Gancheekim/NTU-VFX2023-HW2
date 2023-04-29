@@ -1,7 +1,7 @@
 from cylindrical_proj import cylindrical_proj
 from feature_detection import harris_corner_detection
 from feature_descriptor import SIFT_descriptor
-from image_matching import find_matches2, ransac_img_matching, draw_matches_numpy, draw_stitch_result
+from image_matching import filter_matches, ransac_img_matching, draw_matches, draw_stitch_result
 from stitch_panorama import Panorama
 
 from argparse import ArgumentParser
@@ -127,7 +127,7 @@ if __name__ == "__main__":
 			x = float(k[1])
 			cv_kp2.append(cv2.KeyPoint(x, y, size=1, angle=0, response=1, octave=1, class_id=0)) # (x, y, size, angle, response, octave, class_id)
 		
-		matches2 = find_matches2(des_list[idx], des_list[idx+1], cv_kp1, cv_kp2, thresh_list[idx]) # [x1, y1, x2, y2]
+		matches2 = filter_matches(des_list[idx], des_list[idx+1], cv_kp1, cv_kp2, thresh_list[idx]) # [x1, y1, x2, y2]
 
 		blursigma = 1
 		y_offset_lim = 24
@@ -150,7 +150,7 @@ if __name__ == "__main__":
 		print(f'final offset: {off_x}, {off_y}\n')
 		'''
 		# for visually debugging, please don't delete this:
-		draw_matches_numpy(img_list[idx], img_list[idx+1], matches2)
+		draw_matches(img_list[idx], img_list[idx+1], matches2)
 		draw_stitch_result(off_x, off_y, img_list[idx], img_list[idx+1])
 		'''
 

@@ -5,45 +5,63 @@ from feature_detection import harris_corner_detection
 from feature_descriptor import SIFT_descriptor
 from cylindrical_proj import cylindrical_proj
 
-def find_matches2(des1, des2, kp1, kp2, thresh=0.8):
-		'''
-		brute force matcher, using L2-distance as metric
-		apply thresholding to get best matches
-		'''
-		# BFMatcher with default params
-		bf = cv2.BFMatcher()
-		matches = bf.knnMatch(des1,des2, k=2)
 
-		# Apply ratio test
-		good = []
-		for m,n in matches:
-			if m.distance < thresh*n.distance:
-				good.append([m])
+def filter_matches(des1, des2, kp_left, kp_right, threshold=0.8):
+	'''
+	brute force matcher, using L2-distance as metric
+	apply thresholding to get best matches
+	'''
+	# BFMatcher with default params
+	bf = cv2.BFMatcher()
+	init_matches = bf.knnMatch(des1,des2, k=2)
 
-		matches = []
-		for pair in good:
-			matches.append(list(kp1[pair[0].queryIdx].pt + kp2[pair[0].trainIdx].pt)) # [x1, y1, x2, y2]
+	# Thresholding to select good matches from initial matches
+	good = [[m] for m,n in init_matches if m.distance < threshold*n.distance]
 
-		matches = np.array(matches)
-		return matches
+	# Obtain matches list
+	matches_list = [list(kp_left[pair[0].queryIdx].pt + kp_right[pair[0].trainIdx].pt) for pair in good]
+
+	# Return in array format
+	return np.array(matches_list)
 
 
-def draw_matches_numpy(img1, img2, matches):
-	combo_img = np.concatenate((img1, img2), axis=1)
-	offset = combo_img.shape[1]/2
-	fig, ax = plt.subplots()
-	ax.set_aspect('equal')
-	ax.imshow(np.array(combo_img).astype('uint8')) #　RGB is integer type
+def draw_matches(img_left, img_right, matches):
+	total_img = cv2.hconcat([img_left, img_right])
+	W = total_img.shape[1]  					 		# since we concatenated the image, we should add offset to the x-coordinates
+	offset = W/2								 		# offset in x-direction
+	
+	for i, m in enumerate(matches):
+		color = (255, 255, 0) 											# in current colorspace, this is light blue
+		u, v = (int(m[0]), int(m[1])), (int(m[2] + offset), int(m[3]))  # coordinates of two points in this match
+		# Draw line
+		cv2.line(
+			img = total_img,
+			pt1 = u,
+			pt2 = v,
+			color = color,  
+			thickness = 1,
+		)
+		# Draw markers
+		cv2.drawMarker(
+			img = total_img,
+			position = u,
+			color = color,
+			markerType = cv2.MARKER_SQUARE,
+			markerSize = 10,
+			thickness = 1,
+			line_type = 8,	
+		)
+		cv2.drawMarker(
+			img = total_img,
+			position = v,
+			color = color,
+			markerType = cv2.MARKER_SQUARE,
+			markerSize = 10,
+			thickness = 1,
+			line_type = 8,	
+		)
 
-	ax.plot(matches[:, 0], matches[:, 1], 'xr')
-	ax.plot(matches[:, 2] + offset, matches[:, 3], 'xr')
-	 
-	ax.plot([matches[:, 0], matches[:, 2] + offset], [matches[:, 1], matches[:, 3]],
-			'r', linewidth=0.5)
-
-	plt.savefig("./../data/output/matched_ransac.jpg")
-	plt.show()
-
+	cv2.imwrite("./../data/output/matched_ransac.jpg", total_img)
 
 
 def ransac_img_matching(matches, img1, img2, wind_sz=400, blursigma=1, x_offset_lim=2, y_offset_lim=50):
