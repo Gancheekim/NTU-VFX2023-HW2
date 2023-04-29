@@ -62,7 +62,7 @@ class SIFT_descriptor():
 		'''
 		return orientations, hist
 	
-	def cal_descriptor(self, img, keypoints):
+	def cal_descriptor(self, img, keypoints, threshold=0.2):
 		'''
 		---- input ----
 		img: (H-by-W) array
@@ -94,8 +94,8 @@ class SIFT_descriptor():
 			desc_128_arr = np.array(desc_128)
 			desc_128_arr = self.normalize(desc_128_arr)
 			# clip to 0.2, then normalize again
-			if np.any(desc_128_arr > 0.2):
-				desc_128_arr[desc_128_arr>0.2] = 0.2
+			if np.any(desc_128_arr > threshold):
+				desc_128_arr[desc_128_arr>0.2] = threshold
 				desc_128_arr = self.normalize(desc_128_arr)
 			keypoints_desc.append(desc_128_arr)
 

@@ -1,5 +1,6 @@
 import numpy as np
-	
+import cv2	
+
 def cylindrical_proj(img, f):
 	warp_img = np.zeros_like(img)
 	H,W,_ = img.shape
@@ -24,6 +25,30 @@ def cylindrical_proj(img, f):
 
 	# foward warpping
 	warp_img[y_mat, x_mat, :] = img[y_ori_mat, x_ori_mat, :]
+
+	# translate the warp_img to left-upper-corner, easier warpping on panorama later
+	row = warp_img[int(H/2), :, :]
+	col = warp_img[:, int(W/2), :]
+	x_translate1, y_translate1 = 0, 0
+	x_translate2 = 0
+	for i in range(W):
+		if np.sum(row[i, :]) > 0:
+			x_translate1 = i
+			break
+	for i in range(H):
+		if np.sum(col[i, :]) > 0:
+			y_translate1 = i
+			break
+
+	for i in range(W-1, 0, -1):
+		if np.sum(row[i, :]) > 0:
+			x_translate2 = i
+			break
+	x_translate2 = W - x_translate2
+
+	M = np.float32([[1,0,-x_translate1], [0,1,-y_translate1]])
+	warp_img = cv2.warpAffine(warp_img, M, (W-x_translate1-x_translate2, H-y_translate1))
+
 	return warp_img
 	
 

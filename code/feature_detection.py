@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt 
 from skimage.feature import peak_local_max
 
-def harris_corner_detection(img, gauss_filt_size=3, k=0.04, threshold_ratio=0.01):
+def harris_corner_detection(img, gauss_filt_size=3, k=0.04, threshold_ratio=0.01, sigma=1):
 	'''
 	:img: input image
 	:gauss_filt_size: kernel size for the gaussian blur
@@ -25,9 +25,9 @@ def harris_corner_detection(img, gauss_filt_size=3, k=0.04, threshold_ratio=0.01
 	Ixy = Ix * Iy
 
 	# 3. compute the sums of the products of derivatives at each pixel
-	Sx2 = cv2.GaussianBlur(Ix2, (gauss_filt_size,gauss_filt_size), 0)
-	Sy2 = cv2.GaussianBlur(Iy2, (gauss_filt_size,gauss_filt_size), 0)
-	Sxy = cv2.GaussianBlur(Ixy, (gauss_filt_size,gauss_filt_size), 0)
+	Sx2 = cv2.GaussianBlur(Ix2, (gauss_filt_size,gauss_filt_size), sigma)
+	Sy2 = cv2.GaussianBlur(Iy2, (gauss_filt_size,gauss_filt_size), sigma)
+	Sxy = cv2.GaussianBlur(Ixy, (gauss_filt_size,gauss_filt_size), sigma)
 
 	# 4. Define the matrix at each pixel
 	# M(x,y) = [Sx2, Sxy]
