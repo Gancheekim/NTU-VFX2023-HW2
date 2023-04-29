@@ -18,9 +18,11 @@ def read_data(path):
 		filename_list.append(file)
 	if "parrington" in path:
 		filename_list.sort(reverse=True)
+	else:
+		filename_list.sort()
 
 	for file in filename_list:
-		if file.endswith(".jpg"):
+		if file.endswith(".jpg") or file.endswith(".JPG"):
 			img = cv2.imread(path + file)
 			img_list.append(img)
 
