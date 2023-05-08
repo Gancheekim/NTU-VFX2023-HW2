@@ -29,7 +29,7 @@ class Panorama():
 
 			x = np.linspace(0, 1, abs(x_offset))
 			H = img1.shape[0]
-			y = np.linspace(1, 1, H-abs(y_offset))
+			y = np.ones((1,H-abs(y_offset)))
 
 			x_blend_weight, _ = np.meshgrid(x,y) 
 
